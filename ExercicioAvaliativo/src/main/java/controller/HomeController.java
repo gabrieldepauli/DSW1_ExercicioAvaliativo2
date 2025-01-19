@@ -11,6 +11,7 @@ import controller.command.RegisterPedidoCommand;
 import controller.command.UpdatePedidoCommand;
 import controller.command.Command;
 import controller.command.DeletePedidoCommand;
+import controller.command.ErrorCommand;
 import controller.command.FormRegisterPedidoCommand;
 import controller.command.FormUpdatePedido;
 import controller.command.FormRegisterUserCommand;
@@ -59,13 +60,13 @@ public class HomeController extends HttpServlet {
 			command = new FormUpdatePedido();
 		} else if("buscaPedido".equals(action)) {
 			command = new SearchPedidoCommand();
+		} else {
+			command = new ErrorCommand();
 		}
 		
 		String view = command.execute(request, response);
 		var dispatcher = request.getRequestDispatcher(view);
-		dispatcher.forward(request, response);
-		
-		
+		dispatcher.forward(request, response);	
 		
 	}
 

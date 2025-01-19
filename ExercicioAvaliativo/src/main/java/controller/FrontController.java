@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 import controller.command.Command;
+import controller.command.ErrorCommand;
 import controller.command.FormLoginCommand;
 import controller.command.LoginCommand;
 
@@ -32,6 +33,8 @@ public class FrontController extends HttpServlet {
 			command = new LoginCommand();
 		} else if("loginForm".equals(action)) {
 			command = new FormLoginCommand();
+		} else {
+			command = new ErrorCommand();
 		}
 		
 		String view = command.execute(request, response);

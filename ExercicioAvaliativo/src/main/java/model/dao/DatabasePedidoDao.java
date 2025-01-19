@@ -1,5 +1,6 @@
 package model.dao;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,25 +14,29 @@ public class DatabasePedidoDao implements PedidoDao {
 	/*
 	 * Tabela criada para os pedidos
 	 * 
-	 * create table pedido_db(
-			id INTEGER NOT NULL,
-		    nome VARCHAR(150) NOT NULL,
-		    endereco VARCHAR(200) NOT NULL,
-		    valor DOUBLE NOT NULL,
-		    descricao VARCHAR(500),
-		    username VARCHAR(150) NOT NULL,
-		    PRIMARY KEY (username, id),
-		    FOREIGN KEY (username) REFERENCES usuario_db(email) ON DELETE CASCADE
-		);
+	 CREATE TABLE pedido_db (
+	    id INT AUTO_INCREMENT,
+	    nome VARCHAR(150) NOT NULL,
+	    endereco VARCHAR(200) NOT NULL,
+	    valor DECIMAL(10,2) NOT NULL,
+	    descricao VARCHAR(500),
+	    username VARCHAR(150) NOT NULL,
+	    PRIMARY KEY (id),
+	    UNIQUE (username, id),
+	    FOREIGN KEY (username) REFERENCES usuario_db(email) ON DELETE CASCADE
+	);
 	 *
 	 */
 	
-	private static final String INSERT = "INSERT INTO pedido_db (id, nome, endereco, valor, descricao) VALUES (?, ?, ?, ?, ?)";
-	private static final String SELECT_BY_NAME = "SELECT * FROM pedido_db WHERE nome LIKE ? AND username = ? ORDER BY name";
-	private static final String SELECT_ALL = "SELECT * FROM pedido_db WHERE username = ? ORDER BY name";
+	// Métodos de consultas no Banco
+	private static final String INSERT = "INSERT INTO pedido_db (nome, endereco, valor, descricao, username) VALUES (?, ?, ?, ?, ?)";
+	private static final String SELECT_BY_NAME = "SELECT * FROM pedido_db WHERE nome LIKE ? AND username = ? ORDER BY nome";
+	private static final String SELECT_BY_ID = "SELECT * FROM pedido_db WHERE id = ? AND username = ?";
+	private static final String SELECT_ALL = "SELECT * FROM pedido_db WHERE username = ?";
 	private static final String UPDATE = "UPDATE pedido_db SET nome = ?, endereco = ?, valor = ?, descricao = ? WHERE id = ?";
 	private static final String DELETE = "DELETE FROM pedido_db WHERE id = ? AND username = ?";
 	
+	// Método utilizado para criar o pedido no Banco de Dados
 	@Override
 	public boolean create(User user, Pedido pedido) {
 		if(pedido != null) {
@@ -40,29 +45,29 @@ public class DatabasePedidoDao implements PedidoDao {
 			try ( var connection = DatabaseConnection.getConnection();
 					  var preparedStatement = connection.prepareStatement(INSERT)) {
 
-					preparedStatement.setInt(1, pedido.getId());
-					preparedStatement.setString(2, pedido.getNome());
-					preparedStatement.setString(3, pedido.getEndereco());
-					preparedStatement.setDouble(4, pedido.getValor());
-					preparedStatement.setString(5, pedido.getDescricao());
-					preparedStatement.setString(6, user.getEmail());
+				preparedStatement.setString(1, pedido.getNome());
+				preparedStatement.setString(2, pedido.getEndereco());
+				preparedStatement.setDouble(3, pedido.getValor());
+				preparedStatement.setString(4, pedido.getDescricao());
+				preparedStatement.setString(5, user.getEmail());
 					
-					rows = preparedStatement.executeUpdate();
+				rows = preparedStatement.executeUpdate();
 
-					if (rows > 0) {
-						user.addPedido(pedido);
-					}
-					
-				} catch (SQLException e) {
-					e.printStackTrace();
+				if (rows > 0) {
+					user.addPedido(pedido);
 				}
+					
+			} catch (SQLException e) {
+					e.printStackTrace();
+			}
 
-				return rows > 0;
+			return rows > 0;
 		}
 		
 		return false;
 	}
 
+	// Método utilizado para deletar o pedido no Banco de Dados
 	@Override
 	public boolean delete(User user, Pedido pedido) {
 		if (pedido != null) {
@@ -73,7 +78,7 @@ public class DatabasePedidoDao implements PedidoDao {
 				
 				preparedStatement.setInt(1, pedido.getId());
 				preparedStatement.setString(2, user.getEmail());
-
+				
 				rows = preparedStatement.executeUpdate();
 				
 			} catch (SQLException e) {
@@ -85,6 +90,7 @@ public class DatabasePedidoDao implements PedidoDao {
 		return false;
 	}
 
+	// Método utilizado para atualizar o pedido no Banco de Dados
 	@Override
 	public boolean update(Pedido pedido, int id) {
 		if (pedido != null) {
@@ -97,8 +103,10 @@ public class DatabasePedidoDao implements PedidoDao {
 				preparedStatement.setString(2, pedido.getEndereco());
 				preparedStatement.setDouble(3, pedido.getValor());
 				preparedStatement.setString(4, pedido.getDescricao());
-	
+				preparedStatement.setInt(5, id);
+				
 				rows = preparedStatement.executeUpdate();
+				
 			} catch (SQLException e) {
 					e.printStackTrace();
 			}
@@ -109,6 +117,36 @@ public class DatabasePedidoDao implements PedidoDao {
 		return false;
 	}
 
+	// Método utilizado para recuperar um pedido em específico do Banco de Dados
+	@Override
+	public Pedido retrieve(User user, int id) {
+		Pedido pedido = null;
+			
+		try(var connection = DatabaseConnection.getConnection();
+				var preparedStatement = connection.prepareStatement(SELECT_BY_ID)){
+				
+			preparedStatement.setInt(1, id);
+			preparedStatement.setString(2, user.getEmail());
+			
+			var result = preparedStatement.executeQuery();
+			
+			if(result.next()) {
+				pedido = new Pedido();
+				pedido.setId(result.getInt("id"));
+				pedido.setNome(result.getString("nome"));
+				pedido.setEndereco(result.getString("endereco"));
+				pedido.setValor(result.getDouble("valor"));
+				pedido.setDescricao(result.getString("descricao"));
+			}
+			
+		}catch(SQLException e ) {
+			e.printStackTrace();
+		}
+	
+		return pedido; 
+	}
+	
+	// Método utilizado para recuperar a lista de pedidos do Banco de Dados
 	@Override
 	public List<Pedido> retrive(User user) {
 		user.clearPedido();
@@ -126,7 +164,7 @@ public class DatabasePedidoDao implements PedidoDao {
 				pedido.setNome(result.getString("nome"));
 				pedido.setEndereco(result.getString("endereco"));
 				pedido.setValor(result.getDouble("valor"));
-				pedido.setNome(result.getString("descricao"));
+				pedido.setDescricao(result.getString("descricao"));
 				
 				user.addPedido(pedido);	
 			}
@@ -138,6 +176,7 @@ public class DatabasePedidoDao implements PedidoDao {
 		return user.getPedidos();
 	}
 
+	// Método utilizado para procurar o pedido pelo nome
 	@Override
 	public List<Pedido> findByName(User user, String nome) {
 		var pedidos = new LinkedList<Pedido>();
@@ -162,6 +201,7 @@ public class DatabasePedidoDao implements PedidoDao {
 					
 					pedidos.add(pedido);
 				}
+				
 			} catch (SQLException sqlEx) {
 				sqlEx.printStackTrace();
 				

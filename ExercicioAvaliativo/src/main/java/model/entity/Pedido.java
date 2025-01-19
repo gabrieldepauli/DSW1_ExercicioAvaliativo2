@@ -1,7 +1,8 @@
 package model.entity;
 
+// Classe criada para o objeto Pedido
 public class Pedido {
-	private int id;
+	private int id; // Utilizando AUTO-INCREMENT no banco de dados
 	private String nome;
 	private String endereco;
 	private double valor;
@@ -10,9 +11,8 @@ public class Pedido {
 	public Pedido() {
 	}
 
-	public Pedido(int id, String nome, String endereco, double valor, String descricao) {
+	public Pedido(String nome, String endereco, double valor, String descricao) {
 		super();
-		this.id = id;
 		this.nome = nome;
 		this.endereco = endereco;
 		this.valor = valor;

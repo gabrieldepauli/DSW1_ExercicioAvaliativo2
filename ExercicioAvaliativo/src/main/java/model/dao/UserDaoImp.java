@@ -10,7 +10,7 @@ public class UserDaoImp implements UserDao {
 	/* tabela usuario criada no banco de dados
 	  create table usuario_db(
 		email VARCHAR(128) NOT NULL PRIMARY KEY,
-	    senha VARCHAR(128)
+	    senha VARCHAR(128) NOT NULL
 		);
 	 
 	 método de inserir o admin no banco de dados

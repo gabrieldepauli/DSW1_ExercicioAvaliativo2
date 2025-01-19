@@ -11,6 +11,7 @@ import controller.command.Command;
 import controller.command.FormLoginCommand;
 import controller.command.LoginCommand;
 
+//FrontController utilizado para encaminhar requisições antes do usuário logar
 @WebServlet("/front.do")
 public class FrontController extends HttpServlet {
 	private static final long serialVersionUID = 1L;

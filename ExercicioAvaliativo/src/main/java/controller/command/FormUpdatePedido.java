@@ -1,35 +1,30 @@
 package controller.command;
 
 import java.io.IOException;
-import java.util.List;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import model.dao.PedidoDao;
 import model.dao.PedidoDaoFactory;
-import model.entity.Pedido;
 import model.entity.User;
 
-//Command utilizado para exibir os pedidos na tela
-public class ListPedidosCommand implements Command {
+//Command que prepara os dados necessários para a exibição do formulário de alterar um pedido
+public class FormUpdatePedido implements Command{
 
 	@Override
 	public String execute(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		
 		var user = (User) request.getSession(false).getAttribute("user_id");
+		var id = Integer.parseInt(request.getParameter("id"));
 		
 		PedidoDao dao = new PedidoDaoFactory().factory();
+		var pedido = dao.retrieve(user, id);
 		
-		List<Pedido> pedidos = dao.retrive(user);
+		request.setAttribute("pedido", pedido);
 		
-		request.setAttribute("pedidos", pedidos);
-		
-		// Mensagem para o console para ver se os pedidos estão sendo passados
-		System.out.println("Pedidos: " + pedidos);
-		
-		return "/loggedin/visualizarPedido.jsp";
+		return "/loggedin/alterarPedido.jsp";
 	}
 
 }

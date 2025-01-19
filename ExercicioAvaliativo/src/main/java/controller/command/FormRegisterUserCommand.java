@@ -6,13 +6,14 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-public class FormRegisterCommand implements Command {
+//Command utilizado encaminhar para a página do formulario JSP para inserir os dados do novo usuário
+public class FormRegisterUserCommand implements Command {
 
 	@Override
 	public String execute(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		
-		return "cadastro.jsp";
+		return "/loggedin/cadastrarUsuario.jsp";
 	}
 
 }

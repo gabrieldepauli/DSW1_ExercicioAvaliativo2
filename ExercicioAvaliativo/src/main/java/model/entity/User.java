@@ -3,6 +3,7 @@ package model.entity;
 import java.util.LinkedList;
 import java.util.List;
 
+//Classe criada para o objeto Usuário
 public class User {
 	private String email;
 	private String senha;
